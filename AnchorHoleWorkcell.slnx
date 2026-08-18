@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AnchorHoleWorkcell/AnchorHoleWorkcell.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AnchorHoleWorkcell.SelfTest/AnchorHoleWorkcell.SelfTest.csproj" />
+  </Folder>
+</Solution>
