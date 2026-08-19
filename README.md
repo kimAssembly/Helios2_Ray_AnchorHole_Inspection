@@ -1,6 +1,6 @@
 # Anchor Hole Workcell
 
-LUCID Vision Labs **Helios2 Ray** 3D ToF 카메라의 실시간 포인트클라우드에서 평면 작업부를 찾고, 주변 평면보다 깊게 측정되는 국소 피크를 앙카 드릴 홀 후보로 검출해 XYZ 좌표를 출력하는 Windows 데스크톱 프로그램입니다.
+LUCID Vision Labs **Helios2 Ray** 3D ToF 카메라의 실시간 포인트클라우드에서 평면 작업부를 찾고, 주변 평면보다 깊게 측정되는 국소 피크를 앙카 드릴 홀 후보로 검출해 XYZ 좌표를 출력하는 Winform 프로그램입니다.
 
 ## 사용 장비
 
@@ -98,8 +98,10 @@ dotnet run --project .\tests\AnchorHoleWorkcell.SelfTest\AnchorHoleWorkcell.Self
 
 셀프테스트는 노이즈가 있는 합성 평면에 약 38 mm 깊이의 국소 함몰부를 만들고 홀 위치와 XYZ가 검출되는지 검사합니다.
 
+
 <img width="1920" height="1040" alt="image" src="https://github.com/user-attachments/assets/4b290547-db22-469e-bac7-26359be3b22b" />
 <프로그램 실행 이미지>
+
 
 
 ## 주의사항
