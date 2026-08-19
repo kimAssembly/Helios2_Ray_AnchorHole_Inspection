@@ -60,14 +60,15 @@ Relevant official resources:
 - [LUCID support center](https://support.thinklucid.com/)
 - [LUCID terms and conditions](https://thinklucid.com/terms-and-conditions/)
 
-The installed SDK directory audited on 2026-08-19 did not expose a general Arena SDK EULA as a standalone text file. Therefore this repository does **not** claim that `ArenaNET_MP.dll` may be freely redistributed.
+The installed Arena SDK 1.0.85.11 documentation contains a page titled **Distributing Arena SDK Programs for Windows**. It explicitly describes deployment of release Arena libraries and their required dependencies, and warns that debug libraries must not be distributed to production systems. The installed SDK did not expose a general EULA as a standalone text file, so the distribution instructions must be used together with the agreement accepted for the exact SDK download/installation.
 
 ### Distribution rule
 
 - The Git repository does not include `ArenaNET_MP.dll`; `bin/` and `obj/` are ignored.
 - Developers must obtain and install Arena SDK from LUCID.
 - The current local Release output copies `ArenaNET_MP.dll` next to the application executable.
-- Before publishing a binary ZIP, installer, container or commercial product containing `ArenaNET_MP.dll`, review the license accepted during installation for the exact Arena SDK version or obtain redistribution confirmation from LUCID Vision Labs.
+- For Arena SDK 1.0.85.11, follow the locally installed `docs/html/distributing_sdk_programs_windows.html` deployment matrix and include only the release libraries required by the application.
+- Before publishing a binary ZIP, installer, container or commercial product containing Arena files, retain the applicable vendor notices and review the agreement accepted for the exact SDK version.
 - Do not copy the entire `x64Release` SDK directory into a release. It contains additional vendor and third-party components not audited as application dependencies here.
 
 ## Components present in the Arena SDK but not used directly
@@ -76,7 +77,24 @@ The local Arena SDK installation contains optional viewer/media components and a
 
 ## Project source license
 
-At the time of this audit the repository does not contain a project-level `LICENSE` file. Under default copyright rules, public access to the source does not automatically grant permission to copy, modify or redistribute the project itself. The repository owner should choose and add a project license separately if those permissions are intended.
+The original Anchor Hole Workcell source is licensed under the **MIT License**, copyright (c) 2026 kimAssembly. See [`LICENSE`](LICENSE). This project license does not relicense Microsoft, LUCID or other third-party components.
+
+## Self-contained Windows publishing
+
+Use the checked-in publishing script:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Publish-SelfContained.ps1
+```
+
+It creates a `win-x64` self-contained output under `artifacts/publish/win-x64` and copies the following into its `licenses` directory:
+
+- Anchor Hole Workcell MIT license
+- This third-party notice
+- Microsoft .NET license and third-party notices from the installed .NET distribution
+- Microsoft Windows Desktop/WPF SDK license and third-party notices matching the installed SDK version
+
+The script fails if any required notice file is missing. A self-contained .NET package is not an Arena-independent package: the target still needs the Arena runtime/native deployment required by LUCID's distribution documentation.
 
 ## Release checklist
 
@@ -86,5 +104,5 @@ Before every public binary release:
 2. Inspect the publish directory for newly bundled DLLs.
 3. Record the exact .NET and Arena SDK versions.
 4. Include the matching Microsoft notices if publishing self-contained.
-5. Confirm LUCID redistribution rights before bundling `ArenaNET_MP.dll` or other Arena binaries.
+5. Follow the Arena SDK deployment matrix and the agreement for the exact installed SDK before bundling Arena binaries.
 6. Update this file when a new dependency is introduced.

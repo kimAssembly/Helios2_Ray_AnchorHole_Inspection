@@ -7,11 +7,18 @@
     <Nullable>enable</Nullable>
     <PlatformTarget>x64</PlatformTarget>
     <RootNamespace>AnchorHoleWorkcell</RootNamespace>
+    <Authors>kimAssembly</Authors>
+    <Copyright>Copyright (c) 2026 kimAssembly</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ArenaNET_MP">
       <HintPath>C:\Program Files\LUCID Vision Labs\Arena SDK\x64Release\ArenaNET_MP.dll</HintPath>
       <Private>true</Private>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../LICENSE" Link="LICENSE" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="../../THIRD_PARTY_NOTICES.md" Link="THIRD_PARTY_NOTICES.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

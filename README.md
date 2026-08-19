@@ -112,6 +112,12 @@ dotnet run --project .\tests\AnchorHoleWorkcell.SelfTest\AnchorHoleWorkcell.Self
 - .NET/WPF는 Microsoft의 각 배포 형태에 적용되는 라이선스와 고지사항을 따릅니다.
 - LUCID Arena SDK와 `ArenaNET_MP.dll`은 LUCID Vision Labs의 proprietary 소프트웨어입니다.
 - 소스 저장소에는 Arena SDK 바이너리를 포함하지 않습니다. 바이너리 Release에 Arena DLL을 넣기 전에는 설치 시 동의한 정확한 SDK 라이선스에서 재배포 권한을 확인해야 합니다.
-- 프로젝트 자체의 오픈소스 라이선스는 아직 지정하지 않았습니다.
+- 프로젝트 자체 소스는 MIT License로 배포됩니다. 단, 이 라이선스는 Microsoft 또는 LUCID 구성요소에 적용되지 않습니다.
 
 전체 감사 내역과 배포 체크리스트는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)를 확인하세요.
+
+고지 파일이 포함된 self-contained Windows 패키지는 다음 명령으로 생성합니다.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Publish-SelfContained.ps1
+```
