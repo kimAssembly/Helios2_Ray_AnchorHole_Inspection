@@ -105,3 +105,13 @@ dotnet run --project .\tests\AnchorHoleWorkcell.SelfTest\AnchorHoleWorkcell.Self
 - Force-IP는 현재 세션의 임시 주소 변경입니다. 영구 IP는 ArenaView 또는 LUCID IP Configuration Utility에서 설정하세요.
 - 실제 앙카 홀 판정 성능은 표면 재질, 카메라 각도, 거리, 주변광 및 홀 직경/깊이에 영향을 받습니다.
 - 본 프로젝트는 LUCID Vision Labs의 공식 소프트웨어가 아닌 별도 응용 프로그램입니다.
+
+## 라이선스 및 서드파티 구성요소
+
+- 현재 NuGet 패키지 의존성은 직접/전이 모두 없습니다.
+- .NET/WPF는 Microsoft의 각 배포 형태에 적용되는 라이선스와 고지사항을 따릅니다.
+- LUCID Arena SDK와 `ArenaNET_MP.dll`은 LUCID Vision Labs의 proprietary 소프트웨어입니다.
+- 소스 저장소에는 Arena SDK 바이너리를 포함하지 않습니다. 바이너리 Release에 Arena DLL을 넣기 전에는 설치 시 동의한 정확한 SDK 라이선스에서 재배포 권한을 확인해야 합니다.
+- 프로젝트 자체의 오픈소스 라이선스는 아직 지정하지 않았습니다.
+
+전체 감사 내역과 배포 체크리스트는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)를 확인하세요.
