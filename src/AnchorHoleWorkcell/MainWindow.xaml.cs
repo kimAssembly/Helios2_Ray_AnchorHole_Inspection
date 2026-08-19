@@ -21,6 +21,8 @@ public partial class MainWindow : Window
     string? cameraError;
     float detectionRadius = 18;
     float planeTolerance = 4;
+    DetectionResult? lastResult;
+    IReadOnlyList<HoleDetection> lastStableHoles = [];
     Point dragStart;
     Rect roi = new(0, 0, 1, 1);
 
@@ -103,6 +105,7 @@ public partial class MainWindow : Window
     void Render(DetectionResult result, LiveFrame frame)
     {
         var stableHoles = tracker.Update(result.Holes);
+        UpdateGraphData(result, stableHoles);
         HoleLayer.Width = VideoHost.ActualWidth; HoleLayer.Height = VideoHost.ActualHeight;
         HoleLayer.Children.Clear(); rows.Clear();
         foreach (var hole in stableHoles)
@@ -119,6 +122,99 @@ public partial class MainWindow : Window
         StateText.Text = stableHoles.Count > 0 ? $"FOUND {stableHoles.Count} HOLE(S)" : "VERIFYING...";
         Footer.Text = $"Plane inliers {result.PlaneInliers:N0} · RMSE {result.PlaneRmseMm:F2} mm · auto threshold {result.AutomaticThresholdMm:F2} mm";
     }
+
+    void UpdateGraphData(DetectionResult result, IReadOnlyList<HoleDetection> stableHoles)
+    {
+        lastResult = result;
+        lastStableHoles = stableHoles;
+        int? selected = HoleSelector.SelectedItem is int id ? id : null;
+        var ids = stableHoles.Select(hole => hole.Id).ToArray();
+        HoleSelector.ItemsSource = ids;
+        HoleSelector.SelectedItem = selected is int selectedId && ids.Contains(selectedId)
+            ? selectedId
+            : ids.Length > 0 ? ids[0] : null;
+        DrawNoiseGraph();
+    }
+
+    void HoleSelector_Changed(object sender, SelectionChangedEventArgs e) => DrawNoiseGraph();
+    void NoiseGraph_SizeChanged(object sender, SizeChangedEventArgs e) => DrawNoiseGraph();
+
+    void DrawNoiseGraph()
+    {
+        NoiseGraph.Children.Clear();
+        double width = NoiseGraph.ActualWidth, height = NoiseGraph.ActualHeight;
+        if (width < 100 || height < 80 || lastResult is null || HoleSelector.SelectedItem is not int selectedId)
+        {
+            GraphSummary.Text = "Select a detected hole";
+            return;
+        }
+
+        var hole = lastStableHoles.FirstOrDefault(item => item.Id == selectedId);
+        if (hole is null) return;
+        int halfBand = Math.Max(5, (int)Math.Round(detectionRadius * .45f));
+        var profile = lastResult.Surface
+            .Where(sample => Math.Abs(sample.PixelY - hole.PixelY) <= halfBand && Math.Abs(sample.DepthFromPlaneMm) < 500)
+            .GroupBy(sample => sample.PixelX)
+            .Select(group => new
+            {
+                X = group.Key,
+                Depth = ProfileMedian(group.Select(sample => sample.DepthFromPlaneMm).OrderBy(value => value).ToArray())
+            })
+            .OrderBy(point => point.X).ToArray();
+
+        if (profile.Length < 2)
+        {
+            GraphSummary.Text = "Not enough surface points";
+            return;
+        }
+
+        const double left = 44, right = 12, top = 18, bottom = 27;
+        double plotWidth = Math.Max(1, width - left - right), plotHeight = Math.Max(1, height - top - bottom);
+        float maximum = Math.Max(10, Math.Max(hole.DepthMm * 1.25f, lastResult.AutomaticThresholdMm * 2.2f));
+        float minimum = -Math.Max(3, maximum * .15f);
+        int minimumX = profile[0].X, maximumX = profile[^1].X;
+        double MapX(int x) => left + (x - minimumX) / (double)Math.Max(1, maximumX - minimumX) * plotWidth;
+        double MapY(float depth) => top + (maximum - Math.Clamp(depth, minimum, maximum)) / (maximum - minimum) * plotHeight;
+
+        AddGraphLine(left, MapY(0), width - right, MapY(0), "#526173", 1);
+        AddGraphLine(left, MapY(lastResult.AutomaticThresholdMm), width - right, MapY(lastResult.AutomaticThresholdMm), "#FFD54A", 1, [5, 4]);
+        AddGraphLine(MapX(hole.PixelX), top, MapX(hole.PixelX), height - bottom, "#FF7043", 1, [3, 3]);
+
+        var curve = new Polyline { Stroke = new SolidColorBrush(Color.FromRgb(67, 181, 255)), StrokeThickness = 2 };
+        foreach (var point in profile)
+        {
+            double x = MapX(point.X), y = MapY(point.Depth);
+            curve.Points.Add(new Point(x, y));
+            if (point.Depth < lastResult.AutomaticThresholdMm) continue;
+            var peak = new Ellipse { Width = 5, Height = 5, Fill = Brushes.OrangeRed };
+            Canvas.SetLeft(peak, x - 2.5); Canvas.SetTop(peak, y - 2.5); NoiseGraph.Children.Add(peak);
+        }
+        NoiseGraph.Children.Insert(0, curve);
+
+        AddGraphText("0", 8, MapY(0) - 9, "#9AA8B8");
+        AddGraphText($"{lastResult.AutomaticThresholdMm:F1}", 3, MapY(lastResult.AutomaticThresholdMm) - 9, "#FFD54A");
+        AddGraphText($"{maximum:F0} mm", 3, top - 8, "#9AA8B8");
+        AddGraphText("surface noise", left + 5, MapY(0) + 3, "#7F8D9D");
+        AddGraphText("noise peak", Math.Min(width - 75, MapX(hole.PixelX) + 5), top + 2, "#FF7043");
+        GraphSummary.Text = $"Peak {hole.DepthMm:F1} mm · threshold {lastResult.AutomaticThresholdMm:F1} mm";
+    }
+
+    void AddGraphLine(double x1, double y1, double x2, double y2, string color, double thickness, double[]? dash = null)
+    {
+        var line = new Line { X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Stroke = (Brush)new BrushConverter().ConvertFromString(color)!, StrokeThickness = thickness };
+        if (dash is not null) line.StrokeDashArray = new DoubleCollection(dash);
+        NoiseGraph.Children.Add(line);
+    }
+
+    void AddGraphText(string text, double x, double y, string color)
+    {
+        var label = new TextBlock { Text = text, Foreground = (Brush)new BrushConverter().ConvertFromString(color)!, FontSize = 11 };
+        Canvas.SetLeft(label, x); Canvas.SetTop(label, y); NoiseGraph.Children.Add(label);
+    }
+
+    static float ProfileMedian(float[] sorted) => sorted.Length == 0 ? 0 : sorted.Length % 2 == 1
+        ? sorted[sorted.Length / 2]
+        : (sorted[sorted.Length / 2 - 1] + sorted[sorted.Length / 2]) * .5f;
 
     void Video_MouseDown(object sender, MouseButtonEventArgs e) { drawing = true; dragStart = e.GetPosition(VideoHost); VideoHost.CaptureMouse(); }
     void Video_MouseMove(object sender, MouseEventArgs e) { if (drawing) DrawRoi(dragStart, e.GetPosition(VideoHost), false); }
