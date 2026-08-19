@@ -108,6 +108,7 @@ dotnet run --project .\tests\AnchorHoleWorkcell.SelfTest\AnchorHoleWorkcell.Self
 
 - 출력 XYZ는 **카메라 좌표계 기준 mm**입니다. 로봇 또는 작업 셀 좌표로 사용하려면 별도의 외부 캘리브레이션이 필요합니다.
 - Force-IP는 현재 세션의 임시 주소 변경입니다. 영구 IP는 ArenaView 또는 LUCID IP Configuration Utility에서 설정하세요.
+- ROI를 전체 구역으로 지정했을 시 CPU의 연산량이 급증할 수 있습니다.
 - 실제 앙카 홀 판정 성능은 표면 재질, 카메라 각도, 거리, 주변광 및 홀 직경/깊이에 영향을 받습니다.
 - 노이즈의 구분은 깊이 뿐 아니라, 표면을 제외한 다른 것도 인식할 수 있습니다.
 - 본 프로젝트는 LUCID Vision Labs의 공식 소프트웨어가 아닌 별도 응용 프로그램입니다.
