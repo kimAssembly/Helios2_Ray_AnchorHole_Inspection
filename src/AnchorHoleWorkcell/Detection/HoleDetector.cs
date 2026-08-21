@@ -3,16 +3,17 @@ using System.Numerics;
 namespace AnchorHoleWorkcell.Detection;
 
 public sealed record HoleDetection(int Id, int PixelX, int PixelY, Vector3 Position, float DepthMm, double Confidence, int SupportingPoints);
-public sealed record DetectionResult(IReadOnlyList<HoleDetection> Holes, int PlaneInliers, float PlaneRmseMm, float AutomaticThresholdMm);
+public readonly record struct SurfaceResidual(int PixelX, int PixelY, float DepthFromPlaneMm);
+public sealed record DetectionResult(IReadOnlyList<HoleDetection> Holes, int PlaneInliers, float PlaneRmseMm, float AutomaticThresholdMm, IReadOnlyList<SurfaceResidual> Surface);
 
 public sealed class HoleDetector
 {
     public DetectionResult Detect(LiveFrame frame, float mergeRadiusPixels, float planeToleranceMm)
     {
-        if (frame.Samples.Count < 50) return new([], 0, 0, 0);
+        if (frame.Samples.Count < 50) return new([], 0, 0, 0, []);
         var positions = frame.Samples.Select(point => point.Position).ToArray();
         var plane = FitPlane(positions, planeToleranceMm);
-        if (plane.Inliers.Count < 40) return new([], plane.Inliers.Count, plane.Rmse, 0);
+        if (plane.Inliers.Count < 40) return new([], plane.Inliers.Count, plane.Rmse, 0, []);
 
         var normal = plane.Normal;
         var d = plane.D;
@@ -25,6 +26,8 @@ public sealed class HoleDetector
         float mad = Median(inlierErrors.Select(value => MathF.Abs(value - median)).OrderBy(value => value).ToArray());
         float threshold = Math.Max(2, Math.Max(plane.Rmse * 4.5f, median + 6 * mad));
         var residuals = positions.Select(point => Vector3.Dot(normal, point) + d).ToArray();
+        var surface = frame.Samples.Select((sample, index) =>
+            new SurfaceResidual(sample.PixelX, sample.PixelY, residuals[index])).ToArray();
         var candidates = new List<PeakPoint>();
 
         for (int index = 0; index < frame.Samples.Count; index++)
@@ -51,7 +54,7 @@ public sealed class HoleDetector
                 .50 + .35 * Math.Min(1, (robustDepth - threshold) / Math.Max(1, threshold)) + .15 * Math.Min(1, group.Count / 5.0), 0, 1);
             holes.Add(new(holes.Count + 1, pixelX, pixelY, position, robustDepth, confidence, group.Count));
         }
-        return new(holes, plane.Inliers.Count, plane.Rmse, threshold);
+        return new(holes, plane.Inliers.Count, plane.Rmse, threshold, surface);
     }
 
     static bool SurroundedByPlane(IReadOnlyList<LivePoint> samples, float[] residuals, int candidate, float radius, float tolerance)

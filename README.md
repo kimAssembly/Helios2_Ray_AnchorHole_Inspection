@@ -31,6 +31,7 @@ LUCID Vision Labs **Helios2 Ray** 3D ToF 카메라의 실시간 포인트클라�
 - 사용자 고정 깊이값 없이 현재 표면 노이즈에서 홀 임계값 자동 계산
 - 홀의 화면 위치, 평면 대비 깊이, confidence 및 카메라 좌표계 XYZ(mm) 출력
 - 3프레임 지속성 검사와 이동평균 기반 검출 안정화
+- 홀 번호별 ROI 표면 잔차 프로파일과 자동 임계선/홀 피크 시각화
 
 ## 검출 알고리즘
 
@@ -112,3 +113,19 @@ dotnet run --project .\tests\AnchorHoleWorkcell.SelfTest\AnchorHoleWorkcell.Self
 - 실제 앙카 홀 판정 성능은 표면 재질, 카메라 각도, 거리, 주변광 및 홀 직경/깊이에 영향을 받습니다.
 - 노이즈의 구분은 깊이 뿐 아니라, 표면을 제외한 다른 것도 인식할 수 있습니다.
 - 본 프로젝트는 LUCID Vision Labs의 공식 소프트웨어가 아닌 별도 응용 프로그램입니다.
+
+## 라이선스 및 서드파티 구성요소
+
+- 현재 NuGet 패키지 의존성은 직접/전이 모두 없습니다.
+- .NET/WPF는 Microsoft의 각 배포 형태에 적용되는 라이선스와 고지사항을 따릅니다.
+- LUCID Arena SDK와 `ArenaNET_MP.dll`은 LUCID Vision Labs의 proprietary 소프트웨어입니다.
+- 소스 저장소에는 Arena SDK 바이너리를 포함하지 않습니다. 바이너리 Release에 Arena DLL을 넣기 전에는 설치 시 동의한 정확한 SDK 라이선스에서 재배포 권한을 확인해야 합니다.
+- 프로젝트 자체 소스는 MIT License로 배포됩니다. 단, 이 라이선스는 Microsoft 또는 LUCID 구성요소에 적용되지 않습니다.
+
+전체 감사 내역과 배포 체크리스트는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)를 확인하세요.
+
+고지 파일이 포함된 self-contained Windows 패키지는 다음 명령으로 생성합니다.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Publish-SelfContained.ps1
+```
